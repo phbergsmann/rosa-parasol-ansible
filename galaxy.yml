@@ -1,0 +1,29 @@
+---
+namespace: rosa_parasol
+name: workshop
+version: 1.0.0
+readme: README.md
+authors:
+  - Philipp Bergsmann <philipp.bergsmann@redhat.com>
+
+description: Ansible collection for deploying ROSA parasol workshop
+
+license:
+  - GPL-2.0-or-later
+
+tags:
+  - openshift
+  - workshop
+
+dependencies:
+  "amazon.aws": ">=5.0.0"
+
+repository: https://github.com/phbergsmann/rosa-parasol-ansible
+documentation: https://github.com/phbergsmann/rosa-parasol-ansible
+homepage: https://github.com/phbergsmann/rosa-parasol-ansible
+issues: https://github.com/phbergsmann/rosa-parasol-ansible/issues
+
+build_ignore:
+  - .git
+  - .gitignore
+  - .DS_Store
