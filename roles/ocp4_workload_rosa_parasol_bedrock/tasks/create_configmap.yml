@@ -1,9 +1,15 @@
 ---
 # Create a ConfigMap containing role ARNs and AWS account ID in the target namespace
 
+- name: Create temporary file
+  ansible.builtin.tempfile:
+    state: file
+    suffix: yml
+  register: ocp4_workload_rosa_parasol_bedrock_cm_tmp
+
 - name: Build configmap manifest
   ansible.builtin.copy:
-    dest: "{{ playbook_dir }}/.{{ ocp4_workload_rosa_parasol_bedrock_configmap_name }}.yaml"
+    dest: "{{ ocp4_workload_rosa_parasol_bedrock_cm_tmp.path }}"
     content: |
       apiVersion: v1
       kind: ConfigMap
@@ -18,12 +24,12 @@
 
 - name: Apply ConfigMap manifest
   ansible.builtin.command:
-    cmd: oc apply -f {{ playbook_dir }}/.{{ ocp4_workload_rosa_parasol_bedrock_configmap_name }}.yaml
+    cmd: oc apply -f {{ ocp4_workload_rosa_parasol_bedrock_cm_tmp.path }}
   register: cm_apply
   failed_when: cm_apply.rc != 0
 
 - name: Remove generated configmap manifest
   ansible.builtin.file:
-    path: "{{ playbook_dir }}/.{{ ocp4_workload_rosa_parasol_bedrock_configmap_name }}.yaml"
+    path: "{{ ocp4_workload_rosa_parasol_bedrock_cm_tmp.path }}"
     state: absent
   when: cm_apply is defined
