@@ -1,0 +1,91 @@
+---
+- name: Fetch AWS account id for current user
+  command: aws sts get-caller-identity --query Account --output text
+  register: ocp4_workload_rosa_parasol_bedrock_aws_account_id_result
+  changed_when: false
+
+- name: Set aws_account_id fact
+  set_fact:
+    ocp4_workload_rosa_parasol_bedrock_aws_account_id: "{{ ocp4_workload_rosa_parasol_bedrock_aws_account_id_result.stdout }}"
+
+- name: Create IAM role for Bedrock Knowledge Base
+  amazon.aws.iam_role:
+    name: "{{ ocp4_workload_rosa_parasol_bedrock_bedrock_create_kb_role }}"
+    assume_role_policy_document: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Federated": "arn:aws:iam::{{ ocp4_workload_rosa_parasol_bedrock_aws_account_id }}:oidc-provider/{{ ocp4_workload_rosa_parasol_bedrock_oidc_provider_name }}"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringEquals": {
+                "{{ ocp4_workload_rosa_parasol_bedrock_oidc_provider_name }}:sub": "system:serviceaccount:{{ ocp4_workload_rosa_parasol_bedrock_irsa_namespace_kb }}:{{ ocp4_workload_rosa_parasol_bedrock_irsa_serviceaccount_kb }}"
+              }
+            }
+          }
+        ]
+      }
+    state: present
+    managed_policies: []
+    create_instance_profile: no
+
+- name: Attach inline policy bedrock-create-kb-policy to role
+  amazon.aws.iam_policy:
+    state: present
+    iam_type: role
+    iam_name: "{{ ocp4_workload_rosa_parasol_bedrock_bedrock_create_kb_role }}"
+    policy_name: bedrock-create-kb-policy
+    policy_json: "{{ lookup('file', role_path + '/files/bedrock-create-kb-policy.json') }}"
+
+- name: Create IAM role for Bedrock User
+  amazon.aws.iam_role:
+    name: "{{ ocp4_workload_rosa_parasol_bedrock_bedrock_user_role }}"
+    assume_role_policy_document: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Federated": "arn:aws:iam::{{ ocp4_workload_rosa_parasol_bedrock_aws_account_id }}:oidc-provider/{{ ocp4_workload_rosa_parasol_bedrock_oidc_provider_name }}"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+              "StringLike": {
+                "{{ ocp4_workload_rosa_parasol_bedrock_oidc_provider_name }}:sub": "system:serviceaccount:{{ ocp4_workload_rosa_parasol_bedrock_irsa_namespace_user }}:{{ ocp4_workload_rosa_parasol_bedrock_irsa_serviceaccount_user }}"
+              }
+            }
+          }
+        ]
+      }
+    state: present
+    managed_policies: []
+    create_instance_profile: no
+
+- name: Attach inline policy user-policy to role
+  amazon.aws.iam_policy:
+    state: present
+    iam_type: role
+    iam_name: "{{ ocp4_workload_rosa_parasol_bedrock_bedrock_user_role }}"
+    policy_name: user-policy
+    policy_json: "{{ lookup('file', role_path + '/files/user-policy.json') }}"
+
+- name: Create IAM role for Bedrock Vectorstore
+  amazon.aws.iam_role:
+    name: "{{ ocp4_workload_rosa_parasol_bedrock_bedrock_vectorstore_role }}"
+    assume_role_policy_document: '{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "bedrock.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+    state: present
+    managed_policies: []
+    create_instance_profile: no
+
+- name: Attach inline policy bedrock-vectorstore-policy to role
+  amazon.aws.iam_policy:
+    state: present
+    iam_type: role
+    iam_name: "{{ ocp4_workload_rosa_parasol_bedrock_bedrock_vectorstore_role }}"
+    policy_name: bedrock-vectorstore-policy
+    policy_json: "{{ lookup('file', role_path + '/files/bedrock-vectorstore-policy.json') }}"

@@ -1,0 +1,12 @@
+---
+ocp4_workload_rosa_parasol_bedrock_irsa_namespace_kb: "ic-user-projects"
+ocp4_workload_rosa_parasol_bedrock_irsa_serviceaccount_kb: "project-creator"
+
+ocp4_workload_rosa_parasol_bedrock_irsa_namespace_user: "user*"
+ocp4_workload_rosa_parasol_bedrock_irsa_serviceaccount_user: "my-workbench"
+
+ocp4_workload_rosa_parasol_bedrock_configmap_name: "bedrock-roles-config"
+ocp4_workload_rosa_parasol_bedrock_configmap_namespace: "ic-user-projects"
+ocp4_workload_rosa_parasol_bedrock_bedrock_create_kb_role: "bedrock-create-kb-role"
+ocp4_workload_rosa_parasol_bedrock_bedrock_user_role: "bedrock-user-role"
+ocp4_workload_rosa_parasol_bedrock_bedrock_vectorstore_role: "bedrock-vectorstore-role"

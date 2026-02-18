@@ -1,0 +1,24 @@
+---
+- name: Query OpenShift authentication config for serviceAccountIssuer
+  ansible.builtin.command:
+    cmd: >-
+      oc get authentication.config.openshift.io/cluster -o jsonpath={.spec.serviceAccountIssuer}
+  register: ocp4_workload_rosa_parasol_bedrock_oidc_issuer
+  failed_when: ocp4_workload_rosa_parasol_bedrock_oidc_issuer.rc != 0
+  changed_when: false
+
+- name: Set OIDC issuer raw and provider name
+  ansible.builtin.set_fact:
+    ocp4_workload_rosa_parasol_bedrock_oidc_issuer_raw: "{{ ocp4_workload_rosa_parasol_bedrock_oidc_issuer.stdout }}"
+    ocp4_workload_rosa_parasol_bedrock_oidc_provider_name: "{{ (ocp4_workload_rosa_parasol_bedrock_oidc_issuer.stdout | regex_replace('^https?://','')) }}"
+  when: ocp4_workload_rosa_parasol_bedrock_oidc_issuer.stdout is defined
+
+- name: Set OIDC provider id from provider name
+  ansible.builtin.set_fact:
+    ocp4_workload_rosa_parasol_bedrock_oidc_provider_id: "{{ (ocp4_workload_rosa_parasol_bedrock_oidc_provider_name.split('/')[-1]) }}"
+  when: ocp4_workload_rosa_parasol_bedrock_oidc_provider_name is defined
+
+- name: Debug OIDC issuer and provider
+  ansible.builtin.debug:
+    msg: "OIDC issuer='{{ ocp4_workload_rosa_parasol_bedrock_oidc_issuer_raw }}' provider_name='{{ ocp4_workload_rosa_parasol_bedrock_oidc_provider_name }}' provider_id='{{ ocp4_workload_rosa_parasol_bedrock_oidc_provider_id }}'"
+  when: ocp4_workload_rosa_parasol_bedrock_oidc_provider_name is defined

@@ -1,15 +1,6 @@
 ---
-# - name: Create ConfigMap for Bedrock
-#   import_tasks: create_configmap.yml
 
-# - name: Create ServiceAccount for Bedrock
-#   import_tasks: create_serviceaccount.yml
-
-# - name: Fetch OIDC provider information
-#   import_tasks: fetch_oidc.yml
-
-# - name: Create IAM roles and attach policies
-#   import_tasks: iam_roles.yml
+### Debug outputs and prerequisites checks
 
 - name: Run oc cluster-info
   ansible.builtin.command: oc cluster-info
@@ -30,3 +21,17 @@
 - name: Show AWS STS caller identity
   ansible.builtin.debug:
     msg: "{{ aws_caller_identity.stdout | default('aws CLI not found or command failed') }}"
+
+### Main tasks
+
+- name: Fetch OIDC provider information
+  import_tasks: fetch_oidc.yml
+
+- name: Create IAM roles and attach policies
+  import_tasks: iam_roles.yml
+
+- name: Create ConfigMap for Bedrock
+  import_tasks: create_configmap.yml
+
+- name: Create ServiceAccount for Bedrock
+  import_tasks: create_serviceaccount.yml
